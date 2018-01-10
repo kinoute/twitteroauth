@@ -380,6 +380,16 @@ class TwitterOAuth extends Config
     }
 
     /**
+     * Checks if we have to retry cURL request if it's timed out.
+     *
+     * @return bool
+     */
+    private function cURLAvailable($handle)
+    {
+        return ($this->maxRetries && ($this->attempts <= $this->maxRetries) && curl_errno($handle) === 28);
+    }    
+    
+    /**
      * Format and sign an OAuth / API request
      *
      * @param string $url
@@ -483,10 +493,14 @@ class TwitterOAuth extends Config
             $options[CURLOPT_URL] .= '?' . Util::buildHttpQuery($postfields);
         }
 
-
         $curlHandle = curl_init();
         curl_setopt_array($curlHandle, $options);
-        $response = curl_exec($curlHandle);
+        
+        // retry on cURL timeouts as well.
+        do {
+            $response = curl_exec($curlHandle);
+            $this->attempts++;
+        } while ($this->cURLAvailable($curlHandle));
 
         // Throw exceptions on cURL errors.
         if (curl_errno($curlHandle) > 0) {
