@@ -489,7 +489,6 @@ class TwitterOAuth extends Config
                  } else {
                      $options[CURLOPT_POSTFIELDS] = Util::buildHttpQuery($postfields);
                  }
-                $options[CURLOPT_POSTFIELDS] = Util::buildHttpQuery($postfields);
                 break;
             case 'DELETE':
                 $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
